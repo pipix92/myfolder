@@ -1,11 +1,16 @@
 #!/bin/bash
+set -euxo pipefail
 
-source /venv/main/bin/activate
-COMFYUI_DIR=${WORKSPACE}/ComfyUI
+#source /venv/main/bin/activate
+COMFYUI_DIR="/workspace/ComfyUI/"
+APT_INSTALL="apt-get install -y" # Aggiungi questa riga all'inizio dello script
 
 # Packages are installed after nodes so we can fix them...
 
 APT_PACKAGES=(
+	"wget" # Essenziale per i download
+    "git"  # Essenziale per clonare i nodi
+    "curl" # Essenziale per le verifiche dei token
     #"package-1"
     #"package-2"
 )
@@ -16,8 +21,8 @@ PIP_PACKAGES=(
 )
 
 NODES=(
-    #"https://github.com/ltdrdata/ComfyUI-Manager"
-    #"https://github.com/cubiq/ComfyUI_essentials"
+    "https://github.com/ltdrdata/ComfyUI-Manager"
+    "https://github.com/cubiq/ComfyUI_essentials"
 )
 
 WORKFLOWS=(
@@ -75,6 +80,7 @@ function provisioning_start() {
 }
 
 function provisioning_get_apt_packages() {
+	sudo apt-get update
     if [[ -n $APT_PACKAGES ]]; then
             sudo $APT_INSTALL ${APT_PACKAGES[@]}
     fi
@@ -167,10 +173,10 @@ function provisioning_has_valid_civitai_token() {
 # Download from $1 URL to $2 file path
 function provisioning_download() {
     if [[ -n $HF_TOKEN && $1 =~ ^https://([a-zA-Z0-9_-]+\.)?huggingface\.co(/|$|\?) ]]; then
-        auth_token="$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"
+        auth_token="$HF_TOKEN"
     elif 
         [[ -n $CIVITAI_TOKEN && $1 =~ ^https://([a-zA-Z0-9_-]+\.)?civitai\.com(/|$|\?) ]]; then
-        auth_token="$a5e113ec0a43055bdf4da52b1159e052"
+        auth_token="$CIVITAI_TOKEN"
     fi
     if [[ -n $auth_token ]];then
         wget --header="Authorization: Bearer $auth_token" -qnc --content-disposition --show-progress -e dotbytes="${3:-4M}" -P "$2" "$1"
