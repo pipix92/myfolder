@@ -18,8 +18,20 @@ PIP_PACKAGES=(
 )
 
 NODES=(
+    # --- Gestione e UI ---
     "https://github.com/ltdrdata/ComfyUI-Manager"
+    "https://github.com/rgthree/rgthree-comfy"
+
+    # --- Suite di Nodi Principali ---
     "https://github.com/cubiq/ComfyUI_essentials"
+    "https://github.com/ltdrdata/was-node-suite-comfyui" # Nota: Corrisponde alla tua cartella 'was-ns'
+    "https://github.com/wallish77/wlsh_nodes"
+    "https://github.com/kijai/ComfyUI-KJNodes"
+
+    # --- Preprocessori e Utility Video ---
+    "https://github.com/Fannovel16/comfyui_controlnet_aux"
+    "https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite"
+    "https://github.com/kijai/ComfyUI-HunyuanVideoWrapper" # Nota: Corrisponde a 'comfyui-hunyuanvideowrapper'
 )
 
 WORKFLOWS=(
@@ -48,6 +60,11 @@ ESRGAN_MODELS=(
 CONTROLNET_MODELS=(
 )
 
+DIFFUSERS_MODELS=(
+    "https://huggingface.co/stabilityai/stable-diffusion-3-medium-diffusers"
+	"https://huggingface.co/black-forest-labs/FLUX.1-dev"
+)
+
 ### DO NOT EDIT BELOW HERE UNLESS YOU KNOW WHAT YOU ARE DOING ###
 
 function provisioning_start() {
@@ -56,6 +73,7 @@ function provisioning_start() {
 	# Rendi la directory custom_nodes sicura per Git in modo generico
 	git config --global --add safe.directory "/workspace/ComfyUI/custom_nodes/"
 	provisioning_get_nodes
+	provisioning_get_diffusers
     provisioning_get_pip_packages
     provisioning_get_files \
         "${COMFYUI_DIR}/models/checkpoints" \
@@ -119,6 +137,28 @@ function provisioning_get_nodes() {
     done
 }
 
+function provisioning_get_diffusers() {
+    if [[ ${#DIFFUSERS_MODELS[@]} -eq 0 ]]; then
+        return
+    fi
+
+    printf "Comincio il download dei modelli Diffusers...\n"
+    for repo in "${DIFFUSERS_MODELS[@]}"; do
+        # Estrae il nome della cartella dall'URL (es. "stable-diffusion-3-medium-diffusers")
+        dir_name="${repo##*/}"
+        # Definisce il percorso di destinazione corretto
+        path="${COMFYUI_DIR}/models/diffusers/${dir_name}"
+
+        if [[ -d "$path" ]]; then
+            printf "Modello Diffusers '%s' già presente. Salto.\n" "${dir_name}"
+        else
+            printf "Clonando il modello Diffusers: %s...\n" "${repo}"
+            # Clona direttamente nella cartella di destinazione
+            git clone "${repo}" "${path}"
+        fi
+    done
+}
+
 function provisioning_get_files() {
     # Invece di controllare -z $2, controlliamo se ci sono almeno 2 argomenti passati alla funzione
     if [[ "$#" -lt 2 ]]; then
@@ -176,6 +216,7 @@ function provisioning_has_valid_civitai_token() {
         return 1
     fi
 }
+
 
 # Download from $1 URL to $2 file path
 function provisioning_download() {
