@@ -17,6 +17,7 @@ APT_PACKAGES=(
 PIP_PACKAGES=(
     "piexif"
     "matplotlib"
+	"huggingface-hub"
 )
 
 NODES=(
@@ -144,19 +145,20 @@ function provisioning_get_diffusers() {
         return
     fi
 
-    printf "Comincio il download dei modelli Diffusers...\n"
+    printf "Comincio il download dei modelli Diffusers con huggingface-cli...\n"
     for repo in "${DIFFUSERS_MODELS[@]}"; do
-        # Estrae il nome della cartella dall'URL (es. "stable-diffusion-3-medium-diffusers")
+        # Estrae l'ID del repository (es. black-forest-labs/FLUX.1-dev)
+        repo_id=$(echo "$repo" | sed 's|https://huggingface.co/||')
+        # Estrae il nome della cartella finale (es. FLUX.1-dev)
         dir_name="${repo##*/}"
-        # Definisce il percorso di destinazione corretto
         path="${COMFYUI_DIR}/models/diffusers/${dir_name}"
 
         if [[ -d "$path" ]]; then
             printf "Modello Diffusers '%s' già presente. Salto.\n" "${dir_name}"
         else
-            printf "Clonando il modello Diffusers: %s...\n" "${repo}"
-            # Clona direttamente nella cartella di destinazione
-            git clone "${repo}" "${path}"
+            printf "Scaricando il modello Diffusers: %s...\n" "${repo_id}"
+            # Usa il comando ufficiale di Hugging Face, è molto più robusto di git clone per i modelli
+            huggingface-cli download "${repo_id}" --local-dir "${path}" --local-dir-use-symlinks False
         fi
     done
 }
