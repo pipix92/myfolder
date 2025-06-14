@@ -10,6 +10,8 @@ APT_PACKAGES=(
 	"wget" # Essenziale per i download (anche se usiamo curl, è utile averlo)
     "git"  # Essenziale per clonare i nodi
     "curl" # ESSENZIALE per i download con autenticazione
+	"git-lfs"
+
 )
 
 PIP_PACKAGES=(
@@ -61,7 +63,6 @@ CONTROLNET_MODELS=(
 )
 
 DIFFUSERS_MODELS=(
-    "https://huggingface.co/stabilityai/stable-diffusion-3-medium-diffusers"
 	"https://huggingface.co/black-forest-labs/FLUX.1-dev"
 )
 
@@ -70,6 +71,7 @@ DIFFUSERS_MODELS=(
 function provisioning_start() {
     provisioning_print_header
     provisioning_get_apt_packages
+	git lfs install
 	# Rendi la directory custom_nodes sicura per Git in modo generico
 	git config --global --add safe.directory "/workspace/ComfyUI/custom_nodes/"
 	provisioning_get_nodes
