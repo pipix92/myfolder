@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euxo pipefail
 
-#source /venv/main/bin/activate # Mantenuto commentato come concordato
+source /venv/main/bin/activate # Mantenuto commentato come concordato
 COMFYUI_DIR="/workspace/ComfyUI"
 APT_INSTALL="apt-get install -y"
 
@@ -13,8 +13,8 @@ APT_PACKAGES=(
 )
 
 PIP_PACKAGES=(
-    #"package-1"
-    #"package-2"
+    "piexif"
+    "matplotlib"
 )
 
 NODES=(
